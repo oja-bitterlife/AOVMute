@@ -1,31 +1,61 @@
 import bpy
+import json
 
 # Main UI
 # ===========================================================================================
-class AOV_MUTE_OT_setup(bpy.types.Operator):
-    bl_idname = "aov_mute.setup"
-    bl_label = "Update List"
+class AOV_MUTE_OT_sync(bpy.types.Operator):
+    bl_idname = "aov_mute.sync"
+    bl_label = "SYNC"
 
     # execute
     def execute(self, context):
-        context.scene.aov_list.clear()
+        ADDON_LIST = [list.name for list in context.scene.aov_list]
 
-        # AOVのリスト復活
-        AOV_MUTE = context.view_layer.get("AOV_MUTE")
-        if AOV_MUTE == None:
-            AOV_MUTE = {}
+        # カスタムプロパティを取得
+        if context.view_layer.get("AOV_MUTE") == None:
+            PROPERTY_LIST = {}
+        else:
+            PROPERTY_LIST = json.loads(context.view_layer.get("AOV_MUTE"))
 
+        # 現在のAOVの状態をアドオンのリストに反映
         for aov in context.view_layer.aovs:
-            if aov.name not in AOV_MUTE:
-                AOV_MUTE[aov.name] = {"type": aov.type, "mute": False}
+            # 無ければ追加
+            if aov.name not in ADDON_LIST:
+                item = context.scene.aov_list.add()
+                item.name = aov.name
+                item.mute = False
+            # あればtype合わせ
+            else:
+                context.scene.aov_list.get(aov.name).type = aov.type
 
-        print(AOV_MUTE)
+        # カスタムプロパティの状態をアドオンのリストに反映
+        for prop_name in PROPERTY_LIST:
+            if prop_name not in ADDON_LIST:
+                item = context.scene.aov_list.add()
+                item.name = prop_name
+                item.type = PROPERTY_LIST[prop_name]["type"]
+                item.mute = PROPERTY_LIST[prop_name]["mute"]
 
-        for aov_name in AOV_MUTE:
-            item = context.scene.aov_list.add()
-            item.name = aov_name
-            item.mute = AOV_MUTE[aov_name]["mute"]
-            item.type = AOV_MUTE[aov_name]["type"]
+        # カスタムプロパティを更新
+        AOV_MUTE = {}
+        for list in context.scene.aov_list:
+            AOV_MUTE[list.name] = {"type": list.type, "mute": list.mute}
+        context.view_layer["AOV_MUTE"] = json.dumps(AOV_MUTE)
+
+        # AOVを更新
+        for list in context.scene.aov_list:
+            aov_index = context.view_layer.aovs.find(list.name)
+            if list.mute:
+                # AOVにあれば削除
+                if aov_index != -1:
+                    bpy.context.scene.view_layers["ViewLayer"].active_aov_index = aov_index
+                    bpy.ops.scene.view_layer_remove_aov()
+            else:
+                # AOVに無ければ追加
+                if aov_index == -1:
+                    aov = context.view_layer.aovs.add()
+                    aov.name = list.name
+                    aov.type = list.type
 
         return{'FINISHED'}
 
@@ -40,9 +70,8 @@ class AOV_MUTE_PT_ui(bpy.types.Panel):
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-        self.layout.label(text="AOV List:")
-        self.layout.operator("aov_mute.setup")
         self.layout.template_list("AOV_MUTE_UL_aov_list", "", context.scene, "aov_list", context.scene, "aov_list_index")
+        self.layout.operator("aov_mute.sync")
 
 
 class AOV_MUTE_UL_aov_list(bpy.types.UIList):
@@ -56,34 +85,9 @@ class AOV_MUTE_UL_aov_list(bpy.types.UIList):
             layout.prop(item, "mute", text="", emboss=False, icon="HIDE_ON")
 
 # AOVの状況更新
-def update_prop(self, context):
-    # 現在のリストの状態を取得
-    AOV_MUTE = {}
-    for item in context.scene.aov_list:
-        AOV_MUTE[item.name] = {"type": item.type, "mute": item.mute}
-
-    # 保存されている状態を取得
-    OLD_AOV_MUTE = context.view_layer.get("AOV_MUTE")
-
-    # 違えば更新
-    if AOV_MUTE != OLD_AOV_MUTE:
-        context.view_layer["AOV_MUTE"] = AOV_MUTE
-
-    # AOVの状態更新
-    for aov in context.view_layer.aovs:
-        if aov.name in AOV_MUTE and AOV_MUTE[aov.name]["mute"]:
-            context.view_layer.aovs.remove(aov)  # MUTEなら消す
-
-    for aov_name in AOV_MUTE:
-        if not AOV_MUTE[aov_name]["mute"] and context.view_layer.aovs.find(aov_name) == None:
-            aov = context.view_layer.aovs.add()
-            aov.name = AOV_MUTE[aov_name]["name"]
-            aov.type = AOV_MUTE[aov_name]["type"]
-
-
 class AOVItem(bpy.types.PropertyGroup):
     name:  bpy.props.StringProperty()
-    mute:  bpy.props.BoolProperty(update=update_prop)
+    mute:  bpy.props.BoolProperty()
     type:  bpy.props.StringProperty()
 
 
