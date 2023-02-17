@@ -5,7 +5,7 @@ import json
 # ===========================================================================================
 class AOV_MUTE_OT_sync(bpy.types.Operator):
     bl_idname = "aov_mute.sync"
-    bl_label = "SYNC"
+    bl_label = "AOV Sync"
 
     # execute
     def execute(self, context):
