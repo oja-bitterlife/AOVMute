@@ -3,6 +3,28 @@ import json
 
 # Main UI
 # ===========================================================================================
+class AOV_MUTE_OT_show(bpy.types.Operator):
+    bl_idname = "aov_mute.show"
+    bl_label = "Show All"
+
+    # execute
+    def execute(self, context):
+        for list in context.scene.aov_list:
+            list.mute = False
+        return{'FINISHED'}
+
+class AOV_MUTE_OT_mute(bpy.types.Operator):
+    bl_idname = "aov_mute.mute"
+    bl_label = "Mute All"
+
+    # execute
+    def execute(self, context):
+        for list in context.scene.aov_list:
+            list.mute = True
+        return{'FINISHED'}
+
+
+# 同期ボタン(これを押さないと反映されない)
 class AOV_MUTE_OT_sync(bpy.types.Operator):
     bl_idname = "aov_mute.sync"
     bl_label = "AOV Sync"
@@ -76,6 +98,9 @@ class AOV_MUTE_PT_ui(bpy.types.Panel):
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
+        row = self.layout.row()
+        row.operator("aov_mute.show")
+        row.operator("aov_mute.mute")
         self.layout.template_list("AOV_MUTE_UL_aov_list", "", context.scene, "aov_list", context.scene, "aov_list_index")
         self.layout.operator("aov_mute.sync")
 
