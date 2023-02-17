@@ -9,18 +9,17 @@ class AOV_MUTE_OT_sync(bpy.types.Operator):
 
     # execute
     def execute(self, context):
-        ADDON_LIST = [list.name for list in context.scene.aov_list]
+        self.sync(context)
+        return{'FINISHED'}
 
-        # カスタムプロパティを取得
-        if context.view_layer.get("AOV_MUTE") == None:
-            PROPERTY_LIST = {}
-        else:
-            PROPERTY_LIST = json.loads(context.view_layer.get("AOV_MUTE"))
-
+    # 同期
+    def sync(self, context):
+        # マージ処理
+        # ---------------------------------------------------------------------
         # 現在のAOVの状態をアドオンのリストに反映
         for aov in context.view_layer.aovs:
-            # 無ければ追加
-            if aov.name not in ADDON_LIST:
+            # アドンのリストに無ければ追加
+            if context.scene.aov_list.get(aov.name) == -1:
                 item = context.scene.aov_list.add()
                 item.name = aov.name
                 item.mute = False
@@ -29,13 +28,22 @@ class AOV_MUTE_OT_sync(bpy.types.Operator):
                 context.scene.aov_list.get(aov.name).type = aov.type
 
         # カスタムプロパティの状態をアドオンのリストに反映
+        if context.view_layer.get("AOV_MUTE") == None:
+            PROPERTY_LIST = {}
+        else:
+            PROPERTY_LIST = json.loads(context.view_layer.get("AOV_MUTE"))
+
         for prop_name in PROPERTY_LIST:
-            if prop_name not in ADDON_LIST:
+            # アドンのリストに無ければ追加
+            # あれば無視(アドオンのリストが優先)
+            if context.scene.aov_list.get(prop_name) == -1:
                 item = context.scene.aov_list.add()
                 item.name = prop_name
                 item.type = PROPERTY_LIST[prop_name]["type"]
                 item.mute = PROPERTY_LIST[prop_name]["mute"]
 
+        # アドオンのリストで更新
+        # ---------------------------------------------------------------------
         # カスタムプロパティを更新
         AOV_MUTE = {}
         for list in context.scene.aov_list:
@@ -56,8 +64,6 @@ class AOV_MUTE_OT_sync(bpy.types.Operator):
                     aov = context.view_layer.aovs.add()
                     aov.name = list.name
                     aov.type = list.type
-
-        return{'FINISHED'}
 
 
 # 3DView Tools Panel
