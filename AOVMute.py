@@ -41,7 +41,7 @@ class AOV_MUTE_OT_sync(bpy.types.Operator):
         # 現在のAOVの状態をアドオンのリストに反映
         for aov in context.view_layer.aovs:
             # アドンのリストに無ければ追加
-            if context.scene.aov_list.get(aov.name) == -1:
+            if context.scene.aov_list.get(aov.name) == -1 or context.scene.aov_list.get(aov.name) == None:
                 item = context.scene.aov_list.add()
                 item.name = aov.name
                 item.mute = False
@@ -58,7 +58,7 @@ class AOV_MUTE_OT_sync(bpy.types.Operator):
         for prop_name in PROPERTY_LIST:
             # アドンのリストに無ければ追加
             # あれば無視(アドオンのリストが優先)
-            if context.scene.aov_list.get(prop_name) == -1:
+            if context.scene.aov_list.get(prop_name) == -1 or context.scene.aov_list.get(prop_name) == None:
                 item = context.scene.aov_list.add()
                 item.name = prop_name
                 item.type = PROPERTY_LIST[prop_name]["type"]
