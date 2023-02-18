@@ -3,6 +3,7 @@ import json
 
 # Main UI
 # ===========================================================================================
+# アドオンのリストを全部表示に
 class AOV_MUTE_OT_show(bpy.types.Operator):
     bl_idname = "aov_mute.show"
     bl_label = "Show All"
@@ -13,6 +14,7 @@ class AOV_MUTE_OT_show(bpy.types.Operator):
             list.mute = False
         return{'FINISHED'}
 
+# アドオンのリストを全部MUTEに
 class AOV_MUTE_OT_mute(bpy.types.Operator):
     bl_idname = "aov_mute.mute"
     bl_label = "Mute All"
@@ -25,6 +27,7 @@ class AOV_MUTE_OT_mute(bpy.types.Operator):
 
 
 # 同期ボタン(これを押さないと反映されない)
+# *************************************************************************************************
 class AOV_MUTE_OT_sync(bpy.types.Operator):
     bl_idname = "aov_mute.sync"
     bl_label = "AOV Sync"
@@ -117,7 +120,7 @@ class AOV_MUTE_OT_sync(bpy.types.Operator):
 
 
 # AOVの状況UI
-# *************************************************************************************************
+# ===========================================================================================
 # 3DView Tools Panel
 class AOV_MUTE_PT_ui(bpy.types.Panel):
     bl_idname = "AOV_MUTE_PT_UI"
@@ -153,8 +156,8 @@ class AOVItem(bpy.types.PropertyGroup):
     type:  bpy.props.StringProperty()
 
 
-# ペアレント設定用データ
+# 設定用データ
 # =================================================================================================
 def register():
     bpy.types.Scene.aov_list = bpy.props.CollectionProperty(type=AOVItem)
-    bpy.types.Scene.aov_list_index = bpy.props.IntProperty()
+    bpy.types.Scene.aov_list_index = bpy.props.IntProperty()  # template_list使うときはこれも必要
