@@ -109,7 +109,7 @@ class AOV_MUTE_OT_sync(bpy.types.Operator):
             if list.mute:
                 # AOVにあれば削除
                 if aov_index != -1:
-                    bpy.context.scene.view_layers["ViewLayer"].active_aov_index = aov_index
+                    context.view_layer.active_aov_index = aov_index
                     bpy.ops.scene.view_layer_remove_aov()
             else:
                 # AOVに無ければ追加
