@@ -26,6 +26,44 @@ class AOV_MUTE_OT_mute(bpy.types.Operator):
         return{'FINISHED'}
 
 
+# 更新ボタン(リスト更新のみ)
+# *************************************************************************************************
+class AOV_MUTE_OT_reload(bpy.types.Operator):
+    bl_idname = "aov_mute.reload"
+    bl_label = "Reload List"
+
+    # execute
+    def execute(self, context):
+        self.reload(context)
+        return{'FINISHED'}
+
+    # 同期
+    def reload(self, context):
+        # カスタムプロパティを取得しておく
+        if context.view_layer.get("AOV_MUTE") == None:
+            PROPERTY_LIST = {}
+        else:
+            PROPERTY_LIST = json.loads(context.view_layer.get("AOV_MUTE"))
+
+        # 存在するAOV情報を集める
+        exists_aovs = {}
+        for key in PROPERTY_LIST:  # カスタムプロパティ側
+            exists_aovs[key] = {"type": PROPERTY_LIST[key]["type"], "mute": True}
+        for aov in context.view_layer.aovs:  # AOV側(後にしてカスタムプロパティより優先されるように)
+            exists_aovs[aov.name] = {"type": aov.type, "mute": False}
+
+        # ソートしておく
+        exists_aovs = dict(sorted(exists_aovs.items()))
+
+        # アドオンのリストを存在するAOVのリストに変更
+        context.scene.aov_list.clear()
+        for aov_name in exists_aovs:
+            item = context.scene.aov_list.add()
+            item.name = aov_name
+            item.type = exists_aovs[aov_name]["type"]
+            item.mute = exists_aovs[aov_name]["mute"]
+
+
 # 同期ボタン(これを押さないと反映されない)
 # *************************************************************************************************
 class AOV_MUTE_OT_sync(bpy.types.Operator):
@@ -92,6 +130,9 @@ class AOV_MUTE_OT_sync(bpy.types.Operator):
                 item.name = prop_name
                 item.type = PROPERTY_LIST[prop_name]["type"]
                 item.mute = True
+            # あればtype合わせ
+            else:
+                context.scene.aov_list.get(prop_name).type = PROPERTY_LIST[prop_name]["type"]
 
 
         # アドオンのリストで更新
@@ -135,6 +176,7 @@ class AOV_MUTE_PT_ui(bpy.types.Panel):
         row.operator("aov_mute.show")
         row.operator("aov_mute.mute")
         self.layout.template_list("AOV_MUTE_UL_aov_list", "", context.scene, "aov_list", context.scene, "aov_list_index")
+        self.layout.operator("aov_mute.reload")
         self.layout.operator("aov_mute.sync")
 
 
