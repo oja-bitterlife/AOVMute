@@ -17,7 +17,7 @@ AOVを追加したり削除したり設定(Color/Value)を変えたりした時�
 
 <img src="thumb/sample1.png">
 
-ViewLayer切り替え時は、UpdateListボタンを押せばAOVに影響を与えずにアドオンのリストを作り直すことができます。
+ViewLayer切り替え時は、ReloadListボタンを押せばAOVに影響を与えずにアドオンのリストを作り直すことができます。
 
 ### 他のViewLayerのAOV情報を一気に持ってきたい場合
 1. 転送元となるViewLayerのAOVをすべてMuteにする
