@@ -1,7 +1,10 @@
 import bpy
 import json
 
-AOV_MUTE_PROPERTY_NAME = "AOV_MUTE"
+# 定数
+AOV_MUTE_CATEGORY = "FreePencil"  # アドオンのカテゴリ
+AOV_MUTE_PROPERTY_NAME = "AOV_MUTE"  # プロパティ名
+
 
 # Main UI
 # ===========================================================================================
@@ -170,8 +173,8 @@ class AOV_MUTE_PT_ui(bpy.types.Panel):
     bl_label = "AOV Mute"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "FreePencil"
-    bl_options = {'DEFAULT_CLOSED'}
+    bl_category = AOV_MUTE_CATEGORY
+    bl_options = {'DEFAULT_CLOSED'}  # 寄生ベースなので閉じておく
 
     def draw(self, context):
         row = self.layout.row()
