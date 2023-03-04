@@ -1,6 +1,8 @@
 import bpy
 import json
 
+AOV_MUTE_PROPERTY_NAME = "AOV_MUTE"
+
 # Main UI
 # ===========================================================================================
 # アドオンのリストを全部表示に
@@ -40,10 +42,10 @@ class AOV_MUTE_OT_reload(bpy.types.Operator):
     # 同期
     def reload(self, context):
         # カスタムプロパティを取得しておく
-        if context.view_layer.get("AOV_MUTE") == None:
+        if context.view_layer.get(AOV_MUTE_PROPERTY_NAME) == None:
             PROPERTY_LIST = {}
         else:
-            PROPERTY_LIST = json.loads(context.view_layer.get("AOV_MUTE"))
+            PROPERTY_LIST = json.loads(context.view_layer.get(AOV_MUTE_PROPERTY_NAME))
 
         # 存在するAOV情報を集める
         exists_aovs = {}
@@ -78,10 +80,10 @@ class AOV_MUTE_OT_sync(bpy.types.Operator):
     # 同期
     def sync(self, context):
         # カスタムプロパティを取得しておく
-        if context.view_layer.get("AOV_MUTE") == None:
+        if context.view_layer.get(AOV_MUTE_PROPERTY_NAME) == None:
             PROPERTY_LIST = {}
         else:
-            PROPERTY_LIST = json.loads(context.view_layer.get("AOV_MUTE"))
+            PROPERTY_LIST = json.loads(context.view_layer.get(AOV_MUTE_PROPERTY_NAME))
 
 
         # 存在しないAOVをアドオンのリストから除去
@@ -142,7 +144,7 @@ class AOV_MUTE_OT_sync(bpy.types.Operator):
         for list in context.scene.aov_list:
             if list.mute:
                 AOV_MUTE[list.name] = {"type": list.type}
-        context.view_layer["AOV_MUTE"] = json.dumps(AOV_MUTE)
+        context.view_layer[AOV_MUTE_PROPERTY_NAME] = json.dumps(AOV_MUTE)
 
         # AOVを更新
         for list in context.scene.aov_list:
@@ -185,7 +187,13 @@ class AOV_MUTE_UL_aov_list(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         # print(data, item, active_data, active_propname)
 
+        if item.type == "COLOR":
+            layout.prop(item, "type", text="", emboss=False, icon="EVENT_C", icon_only=True)
+        else:
+            layout.prop(item, "type", text="", emboss=False, icon="EVENT_V", icon_only=True)
+
         layout.prop(item, "name", text="", emboss=False)
+
         if item.mute == False:
             layout.prop(item, "mute", text="", emboss=False, icon="HIDE_OFF")
         else:
